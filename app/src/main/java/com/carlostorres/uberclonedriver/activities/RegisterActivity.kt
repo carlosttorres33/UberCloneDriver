@@ -6,11 +6,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
-import com.carlostorres.uberclonedriver.R
 import com.carlostorres.uberclonedriver.databinding.ActivityRegisterBinding
-import com.carlostorres.uberclonedriver.models.Client
+import com.carlostorres.uberclonedriver.models.Driver
 import com.carlostorres.uberclonedriver.providers.AuthProvider
-import com.carlostorres.uberclonedriver.providers.ClientProvider
+import com.carlostorres.uberclonedriver.providers.DriverProvider
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -18,7 +17,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private val authProvider = AuthProvider()
 
-    private val clientProvider = ClientProvider()
+    private val driverProvider = DriverProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +58,7 @@ class RegisterActivity : AppCompatActivity() {
             authProvider.register(email, password).addOnCompleteListener {
                 if (it.isSuccessful){
 
-                    val client = Client(
+                    val driver = Driver(
                         id = authProvider.getId(),
                         name = name,
                         lastname = lastName,
@@ -67,7 +66,7 @@ class RegisterActivity : AppCompatActivity() {
                         email = email
                     )
 
-                    clientProvider.create(client).addOnCompleteListener {
+                    driverProvider.create(driver).addOnCompleteListener {
                         if (it.isSuccessful){
                             goToMap()
                         } else {
