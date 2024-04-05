@@ -102,7 +102,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                     }
 
                     permission.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                        easyWayLocation?.startLocation()
+                        //easyWayLocation?.startLocation()
                         checkIfDriverIsConnected()
                         Log.d("Localization", "Permiso Concedido con limitacion")
                     }
