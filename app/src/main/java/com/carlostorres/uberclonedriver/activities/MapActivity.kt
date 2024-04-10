@@ -10,6 +10,7 @@ import android.location.Location
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -18,6 +19,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.carlostorres.uberclonedriver.R
 import com.carlostorres.uberclonedriver.databinding.ActivityMapBinding
+import com.carlostorres.uberclonedriver.databinding.ModalBottomSheetBookingBinding
+import com.carlostorres.uberclonedriver.fragments.ModalButtonSheetBooking
 import com.carlostorres.uberclonedriver.models.Booking
 import com.carlostorres.uberclonedriver.providers.AuthProvider
 import com.carlostorres.uberclonedriver.providers.BookingProvider
@@ -46,13 +49,30 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var googleMap: GoogleMap? = null
     private var myLocationLatLng: LatLng? = null
 
-    private var easyWayLocation: EasyWayLocation? = null
+    var easyWayLocation: EasyWayLocation? = null
 
     private var markerDriver: Marker? = null
 
     private val geoProvider = GeoProvider()
     private val authProvider = AuthProvider()
     private val bookingProvider = BookingProvider()
+
+    private lateinit var mapActivity: MapActivity
+
+    private val modalBooking = ModalButtonSheetBooking()
+
+    private val timer = object : CountDownTimer(20000, 1000){
+
+        override fun onTick(counter: Long) {
+            Log.d("Timer", counter.toString())
+        }
+
+        override fun onFinish() {
+            Log.d("Timer", "ON FINISH")
+            modalBooking.dismiss()
+        }
+
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -136,6 +156,19 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
     }
 
+    private fun showModalBooking(booking : Booking){
+
+        val bundle = Bundle()
+
+        bundle.putString("booking", booking.toJson())
+        modalBooking.arguments = bundle
+
+        modalBooking.show(supportFragmentManager, ModalButtonSheetBooking.TAG)
+
+        timer.start()
+
+    }
+
     private fun listenerBooking(){
 
         bookingListener = bookingProvider.getBooking().addSnapshotListener { snapshot, error ->
@@ -153,7 +186,12 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
                     val booking = snapshot.documents[0].toObject(Booking::class.java)
 
-                    Log.d("Firestore", "Data: ${booking?.toJson()}")
+                    if (booking?.status == "create"){
+
+                        showModalBooking(booking!!)
+                        Log.d("Firestore", "Data: ${booking?.toJson()}")
+
+                    }
 
                 }
 

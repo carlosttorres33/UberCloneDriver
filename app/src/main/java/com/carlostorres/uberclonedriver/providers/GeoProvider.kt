@@ -24,7 +24,7 @@ class GeoProvider {
 
     fun removeLocation(idDriver:String){
 
-        collection.document(idDriver) .delete()
+        collection.document(idDriver).delete()
 
     }
 
@@ -37,5 +37,7 @@ class GeoProvider {
         }
 
     }
+
+
 
 }

@@ -29,4 +29,14 @@ class BookingProvider {
 
     }
 
+    fun updateStatus(idClient : String, status: String): Task<Void> {
+
+        return db.document(idClient).update("status", status).addOnFailureListener { exception ->
+
+            Log.d("Firestore", "Error: ${exception.message}")
+
+        }
+
+    }
+
 }
