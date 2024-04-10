@@ -18,7 +18,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.carlostorres.uberclonedriver.R
 import com.carlostorres.uberclonedriver.databinding.ActivityMapBinding
+import com.carlostorres.uberclonedriver.models.Booking
 import com.carlostorres.uberclonedriver.providers.AuthProvider
+import com.carlostorres.uberclonedriver.providers.BookingProvider
 import com.carlostorres.uberclonedriver.providers.GeoProvider
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
@@ -35,9 +37,11 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.firestore.ListenerRegistration
 
 class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
+    private var bookingListener: ListenerRegistration? = null
     private lateinit var binding: ActivityMapBinding
     private var googleMap: GoogleMap? = null
     private var myLocationLatLng: LatLng? = null
@@ -48,6 +52,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
     private val geoProvider = GeoProvider()
     private val authProvider = AuthProvider()
+    private val bookingProvider = BookingProvider()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -87,6 +92,8 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             disconnectDriver()
         }
 
+        listenerBooking()
+
     }
 
     val locationPermissions =
@@ -124,6 +131,34 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
             geoProvider.removeLocation(authProvider.getId())
             showButtonConnect()
+
+        }
+
+    }
+
+    private fun listenerBooking(){
+
+        bookingListener = bookingProvider.getBooking().addSnapshotListener { snapshot, error ->
+
+            if (error != null){
+
+                Log.d("Firestore","Error: ${error.message}")
+                return@addSnapshotListener
+
+            }
+
+            if (snapshot != null){
+
+                if (snapshot.documents.size > 0){
+
+                    val booking = snapshot.documents[0].toObject(Booking::class.java)
+
+                    Log.d("Firestore", "Data: ${booking?.toJson()}")
+
+                }
+
+            }
+
 
         }
 
@@ -297,6 +332,7 @@ class MapActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     override fun onDestroy() {
         super.onDestroy()
         easyWayLocation?.endUpdates()
+        bookingListener?.remove()
     }
 
 }
