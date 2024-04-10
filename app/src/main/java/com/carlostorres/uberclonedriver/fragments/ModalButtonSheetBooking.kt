@@ -1,5 +1,7 @@
 package com.carlostorres.uberclonedriver.fragments
 
+import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -10,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.carlostorres.uberclonedriver.R
 import com.carlostorres.uberclonedriver.activities.MapActivity
+import com.carlostorres.uberclonedriver.activities.MapTripActivity
 import com.carlostorres.uberclonedriver.models.Booking
 import com.carlostorres.uberclonedriver.providers.AuthProvider
 import com.carlostorres.uberclonedriver.providers.BookingProvider
@@ -28,6 +31,8 @@ class ModalButtonSheetBooking : BottomSheetDialogFragment() {
     private val geoProvider = GeoProvider()
     private val authProvider = AuthProvider()
 
+    private lateinit var booking : Booking
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -43,7 +48,7 @@ class ModalButtonSheetBooking : BottomSheetDialogFragment() {
         btnCancel = view.findViewById(R.id.btnCancel)
 
         val data = arguments?.getString("booking")
-        val booking = Booking.fromJson(data!!)
+        booking = Booking.fromJson(data!!)!!
 
         Log.d("Arguments", "${booking?.toJson()}")
 
@@ -69,15 +74,28 @@ class ModalButtonSheetBooking : BottomSheetDialogFragment() {
 
             if (it.isSuccessful){
 
-                Toast.makeText(context, "Viaje Cancelado", Toast.LENGTH_SHORT).show()
+                dismiss()
+
+                if (context != null){
+                    Toast.makeText(context, "Viaje Cancelado", Toast.LENGTH_SHORT).show()
+                }
 
             } else {
-
-                Toast.makeText(context, "No se pudo cancelar el viaje", Toast.LENGTH_LONG).show()
+                if (context != null){
+                    Toast.makeText(context, "No se pudo cancelar el viaje", Toast.LENGTH_LONG).show()
+                }
 
             }
 
         }
+
+    }
+
+    private fun goToMapTrip(){
+
+        val intent = Intent(context, MapTripActivity::class.java)
+
+        context?.startActivity(intent)
 
     }
 
@@ -89,16 +107,27 @@ class ModalButtonSheetBooking : BottomSheetDialogFragment() {
 
                 (activity as? MapActivity)?.easyWayLocation?.endUpdates()
                 geoProvider.removeLocation(authProvider.getId())
-                Toast.makeText(context, "Viaje Aceptado", Toast.LENGTH_SHORT).show()
+                goToMapTrip()
 
             } else {
-
-                Toast.makeText(context, "No se pudo aceptar el viaje", Toast.LENGTH_LONG).show()
+                if (context != null){
+                    Toast.makeText(context, "No se pudo aceptar el viaje", Toast.LENGTH_LONG).show()
+                }
 
             }
 
         }
 
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+
+        if (booking.idClient != null){
+
+            cancelBooking(booking?.idClient!!)
+
+        }
     }
 
     companion object{
